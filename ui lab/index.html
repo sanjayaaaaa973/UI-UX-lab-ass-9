@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RapCart Shopping App</title>
+
+    <style>
+        :root {
+            --green: #2d7c6c;
+            --teal: #80b7b0;
+            --pale: #dcebe3;
+            --text: #293532;
+            --muted: #778681;
+            --white: #f7f8f5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f3f3f3;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 14px 10px 20px;
+        }
+
+        .stage {
+            width: 342px;
+            max-width: 100%;
+            position: relative;
+            padding-top: 25px;
+        }
+
+        .screen-label {
+            position: absolute;
+            top: 0;
+            left: 15px;
+            color: #bcbcbc;
+            font-size: 14px;
+        }
+
+        .phone {
+            height: min(700px, calc(100vh - 52px));
+            min-height: 610px;
+            width: 310px;
+            max-width: 100%;
+            margin: auto;
+            background: var(--teal);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* STATUS BAR */
+
+        .status {
+            height: 30px;
+            flex: 0 0 30px;
+            background: #dedede;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 10px;
+        }
+
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .signal {
+            display: flex;
+            align-items: flex-end;
+            gap: 1px;
+            height: 10px;
+        }
+
+        .signal i {
+            display: block;
+            width: 2px;
+            background: #303633;
+        }
+
+        .signal i:nth-child(1) {
+            height: 3px;
+        }
+
+        .signal i:nth-child(2) {
+            height: 5px;
+        }
+
+        .signal i:nth-child(3) {
+            height: 7px;
+        }
+
+        .signal i:nth-child(4) {
+            height: 9px;
+        }
+
+        .battery {
+            width: 15px;
+            height: 8px;
+            border: 1px solid #303633;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .battery::before {
+            content: "";
+            position: absolute;
+            inset: 1px 2px;
+            background: #303633;
+        }
+
+        .battery::after {
+            content: "";
+            position: absolute;
+            right: -3px;
+            top: 2px;
+            width: 2px;
+            height: 3px;
+            background: #303633;
+        }
+
+        /* SCREEN MANAGEMENT */
+
+        .screens {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .screen {
+            display: none;
+            position: absolute;
+            inset: 0;
+            flex-direction: column;
+            background: var(--teal);
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        .screen-header {
+            height: 41px;
+            flex: 0 0 41px;
+            background: var(--green);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 13px;
+        }
+
+        .header-brand {
+            font-size: 16px;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .screen-title {
+            font-size: 12px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .icon-btn {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .icon-btn svg {
+            height: 17px;
+            width: 17px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .page-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 8px 13px 14px;
+            scrollbar-width: none;
+        }
+
+        .page-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* SEARCH */
+
+        .search {
+            height: 34px;
+            background: #f5f6f4;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0 9px;
+            margin-bottom: 14px;
+            color: #7d8582;
+            font-size: 10px;
+        }
+
+        .search svg {
+            width: 14px;
+            height: 14px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.4;
+            flex-shrink: 0;
+        }
+
+        .search input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: none;
+            background: transparent;
+            font: inherit;
+        }
+
+        /* HOME PROMOTION */
+
+        .promo {
+            height: 121px;
+            background: var(--pale);
+            border-radius: 8px;
+            padding: 13px 11px;
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin-bottom: 18px;
+        }
+
+        .promo-copy {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .eyebrow {
+            color: #626d68;
+            font-size: 7px;
+            margin-bottom: 8px;
+        }
+
+        .promo h2 {
+            font-size: 16px;
+            line-height: 1.35;
+            margin: 0 0 6px;
+        }
+
+        .promo p {
+            font-size: 9px;
+            color: #7d8983;
+            margin: 0 0 6px;
+            white-space: nowrap;
+        }
+
+        .promo-art {
+            width: 78px;
+            flex: 0 0 78px;
+            background: #f2f5f1;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .collection {
+            background: transparent;
+            border: 0;
+            padding: 0;
+            color: #56756a;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* CATEGORIES */
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin: 0 0 10px;
+        }
+
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+            margin-bottom: 17px;
+        }
+
+        .category {
+            text-align: center;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        .category-tile {
+            height: 40px;
+            background: #f5f6f2;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        .category-tile svg {
+            width: 19px;
+            height: 19px;
+            fill: none;
+            stroke: #747e79;
+            stroke-width: 1.15;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* PRODUCTS */
+
+        .section-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 9px;
+        }
+
+        .section-row .section-title {
+            margin: 0;
+        }
+
+        .view-all {
+            border: 0;
+            background: transparent;
+            padding: 0;
+            color: #63877f;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .product-card {
+            min-width: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+            color: inherit;
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .product-image {
+            height: 96px;
+            border-radius: 5px;
+            background: var(--pale);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .product-image svg {
+            width: 82%;
+            height: 85%;
+        }
+
+        .product-name {
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+
+        .rating {
+            font-size: 9px;
+            color: #7e938c;
+            margin-bottom: 5px;
+        }
+
+        .price {
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .delivery {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            font-size: 9px;
+            margin-top: 16px;
+            white-space: nowrap;
+            color: #244c43;
+        }
+
+        .delivery svg {
+            width: 13px;
+            height: 13px;
+            fill: none;
+            stroke: #547e73;
+            stroke-width: 1.2;
+        }
+
+        /* SHOP SCREEN */
+
+        .chips {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 11px;
+        }
+
+        .chip {
+            border: 1px solid #eef4f0;
+            background: white;
+            border-radius: 14px;
+            padding: 5px 11px;
+            color: #53625c;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        .chip.active {
+            background: #e5eee9;
+            color: #2a6254;
+        }
+
+        .tool-row {
+            display: flex;
+            gap: 7px;
+            margin-bottom: 11px;
+        }
+
+        .tool-btn {
+            height: 28px;
+            flex: 1;
+            border: 1px solid #cae0d8;
+            background: var(--teal);
+            border-radius: 4px;
+            color: #304f46;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        .catalog-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            margin-bottom: 8px;
+        }
+
+        .shop-grid .product-image {
+            height: 88px;
+        }
+
+        .catalog-note {
+            text-align: center;
+            font-size: 8px;
+            color: #e4f0ea;
+            margin-top: 12px;
+        }
+
+        /* PRODUCT DETAILS */
+
+        .product-hero {
+            height: 168px;
+            background: var(--pale);
+            border-radius: 4px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .product-hero svg {
+            width: 115px;
+            height: 135px;
+        }
+
+        .stock {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #1b9d62;
+            color: white;
+            padding: 4px 5px;
+            font-size: 9px;
+        }
+
+        .dots {
+            position: absolute;
+            bottom: -9px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .dots i {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .dots i:first-child {
+            background: #4d7467;
+        }
+
+        .detail-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 17px;
+        }
+
+        .detail-title {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .heart {
+            background: transparent;
+            border: 0;
+            color: #557b70;
+            font-size: 19px;
+            cursor: pointer;
+        }
+
+        .reviews {
+            font-size: 9px;
+            color: #789089;
+            margin-top: 4px;
+        }
+
+        .detail-price {
+            font-size: 13px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .option-label {
+            font-size: 9px;
+            margin: 13px 0 6px;
+        }
+
+        .swatches {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 9px;
+            color: #63736c;
+        }
+
+        .swatch {
+            width: 13px;
+            height: 13px;
+            border: 1px solid #6e8278;
+            border-radius: 50%;
+            background: #bfc5c0;
+        }
+
+        .details-copy {
+            font-size: 9px;
+            line-height: 1.6;
+            color: #3e5f54;
+            margin-top: 12px;
+        }
+
+        .details-copy p {
+            margin: 0 0 6px;
+        }
+
+        .features {
+            font-size: 9px;
+            color: #3e5f54;
+            padding-left: 13px;
+            margin: 7px 0 10px;
+        }
+
+        .primary-button {
+            width: 100%;
+            min-height: 37px;
+            border: 0;
+            border-radius: 4px;
+            background: #607f73;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .button-note {
+            text-align: center;
+            font-size: 8px;
+            color: #e7f1ec;
+            margin-top: 7px;
+        }
+
+        /* CHECKOUT */
+
+        .success-strip {
+            height: 26px;
+            display: flex;
+            align-items: center;
+            background: #e1eee5;
+            border-radius: 4px;
+            padding: 0 8px;
+            font-size: 9px;
+            color: #53756a;
+            margin-bottom: 9px;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 42px 1fr auto;
+            gap: 7px;
+            align-items: center;
+            padding-bottom: 9px;
+            border-bottom: 1px solid #a7cbc0;
+            margin-bottom: 9px;
+        }
+
+        .cart-thumb {
+            height: 54px;
+            background: var(--pale);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-thumb svg {
+            width: 36px;
+            height: 45px;
+        }
+
+        .cart-item-title {
+            font-size: 8px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .cart-item-sub {
+            font-size: 8px;
+            color: #59756b;
+            margin-bottom: 5px;
+        }
+
+        .quantity {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #b8d7cd;
+            border-radius: 4px;
+            height: 19px;
+        }
+
+        .quantity button {
+            border: 0;
+            width: 18px;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .quantity span {
+            font-size: 8px;
+            min-width: 13px;
+            text-align: center;
+        }
+
+        .item-price {
+            font-size: 8px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .promo-code {
+            height: 28px;
+            display: flex;
+            background: #4e7b6d;
+            border-radius: 3px;
+            padding: 3px 5px;
+            gap: 5px;
+            margin-bottom: 11px;
+        }
+
+        .promo-code input {
+            flex: 1;
+            width: 50%;
+            background: transparent;
+            color: white;
+            border: 0;
+            outline: none;
+            font-size: 8px;
+        }
+
+        .promo-code input::placeholder {
+            color: #e3eee9;
+        }
+
+        .promo-code button {
+            background: transparent;
+            border: 0;
+            color: white;
+            font-size: 8px;
+            cursor: pointer;
+        }
+
+        .summary-title {
+            font-size: 11px;
+            margin: 0 0 8px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            margin-bottom: 6px;
+            color: #36594e;
+        }
+
+        .summary-line strong {
+            font-weight: 500;
+        }
+
+        .summary-divider {
+            border-top: 1px solid #b0d0c6;
+            margin: 8px 0;
+        }
+
+        .summary-total {
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .fine-print {
+            font-size: 7px;
+            line-height: 1.4;
+            color: #456b5e;
+            margin: 8px 0 11px;
+        }
+
+        .applied-code {
+            display: none;
+            font-size: 8px;
+            color: #1f8652;
+            margin-bottom: 8px;
+        }
+
+        /* ORDER CONFIRMATION */
+
+        .confirmation {
+            text-align: center;
+            padding-top: 7px;
+        }
+
+        .check-circle {
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            background: #edf4ef;
+            color: #6d9b8a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 7px;
+        }
+
+        .thanks {
+            font-size: 13px;
+            margin: 0 0 6px;
+        }
+
+        .confirm-copy {
+            font-size: 8px;
+            line-height: 1.45;
+            color: #557a6e;
+            margin-bottom: 10px;
+        }
+
+        .order-card {
+            background: var(--white);
+            border-radius: 4px;
+            padding: 9px 8px;
+            margin-bottom: 14px;
+        }
+
+        .order-card-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            margin-bottom: 5px;
+        }
+
+        .order-card-sub {
+            font-size: 7px;
+            color: #7a8882;
+        }
+
+        .order-heading {
+            font-size: 11px;
+            margin-bottom: 9px;
+        }
+
+        .order-product {
+            display: grid;
+            grid-template-columns: 27px 1fr auto;
+            gap: 7px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .mini-thumb {
+            height: 32px;
+            background: var(--pale);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mini-thumb svg {
+            width: 24px;
+            height: 29px;
+        }
+
+        .order-product-name {
+            font-size: 8px;
+            margin-bottom: 3px;
+        }
+
+        .order-product-sub {
+            font-size: 7px;
+            color: #71857c;
+        }
+
+        .order-summary-lines {
+            border-top: 1px solid #b7d2c8;
+            padding-top: 8px;
+        }
+
+        .order-summary-lines .summary-line {
+            font-size: 8px;
+        }
+
+        .delivery-estimate {
+            display: flex;
+            gap: 6px;
+            font-size: 8px;
+            line-height: 1.5;
+            color: #42675a;
+            border-top: 1px solid #b7d2c8;
+            margin-top: 8px;
+            padding-top: 9px;
+        }
+
+        /* ACCOUNT */
+
+        .account-intro {
+            text-align: center;
+            padding: 18px 6px 14px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--pale);
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .account-intro h2 {
+            font-size: 14px;
+        }
+
+        .account-intro p {
+            font-size: 9px;
+            color: #54756b;
+        }
+
+        .account-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 9px;
+            background: var(--pale);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+
+        /* NAVIGATION */
+
+        .bottom-nav {
+            height: 48px;
+            flex: 0 0 48px;
+            background: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding-top: 7px;
+        }
+
+        .nav-item {
+            border: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 3px;
+            color: #6c7772;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #3e675b;
+        }
+
+        .nav-item svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .home-indicator {
+            height: 16px;
+            flex: 0 0 16px;
+            background: #557c71;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .home-indicator span {
+            width: 83px;
+            height: 3px;
+            border-radius: 5px;
+            background: #1e2926;
+        }
+
+        .toast {
+            display: none;
+            position: absolute;
+            z-index: 5;
+            bottom: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #294f43;
+            color: white;
+            border-radius: 5px;
+            padding: 8px 12px;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        @media (max-width: 360px) {
+            body {
+                padding: 7px 0;
+            }
+
+            .stage {
+                width: 100%;
+                padding-top: 23px;
+            }
+
+            .phone {
+                width: min(310px, 100vw);
+                height: calc(100vh - 42px);
+                min-height: 590px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stage">
+        <div class="screen-label" id="screenLabel">Home screen</div>
+
+        <div class="phone">
+
+            <div class="status">
+                <span>2.00</span>
+                <div class="status-right">
+                    <span class="signal"><i></i><i></i><i></i><i></i></span>
+                    <span>⌁</span>
+                    <span class="battery"></span>
+                </div>
+            </div>
+
+            <div class="screens">
+
+                <!-- 1. HOME SCREEN -->
+                <section class="screen active" id="home" data-label="Home screen">
+                    <header class="screen-header">
+                        <div class="header-brand">RapCart</div>
+                        <button class="icon-btn" data-action="notify" aria-label="Notifications">♧</button>
+                    </header>
+
+                    <main class="page-content">
+                        <label class="search">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="10.8" cy="10.8" r="7.2" />
+                                <path d="m16 16 4 4" />
+                            </svg>
+                            <input class="search-input" data-search="home" placeholder="Search everyday essentials">
+                        </label>
+
+                        <section class="promo">
+                            <div class="promo-copy">
+                                <div class="eyebrow">THE DAILY EDIT</div>
+                                <h2>Buy your<br>Product</h2>
+                                <p>Useful accessories, simply made.</p>
+                                <button class="collection" data-go="shop">Explore the collection →</button>
+                            </div>
+                            <div class="promo-art">
+                                <svg viewBox="0 0 100 100">
+                                    <use href="#tote" />
+                                </svg>
+                            </div>
+                        </section>
+
+                        <h3 class="section-title">Shop by category</h3>
+
+                        <div class="categories">
+                            <div class="category" data-category="Bags">
+                                <div class="category-tile">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M5 8h14l-1 12H6L5 8Z" />
+                                        <path d="M7 8V6a5 5 0 0 1 10 0v2" />
+                                    </svg>
+                                </div>Bags
+                            </div>
+
+                            <div class="category" data-category="Wallets">
+                                <div class="category-tile">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M5 6h12a2 2 0 0 1 2 2v11H7a2 2 0 0 1-2-2V6Z" />
+                                        <path d="M5 8h12M15 12h5v4h-5a2 2 0 0 1 0-4Z" />
+                                    </svg>
+                                </div>Wallets
+                            </div>
+
+                            <div class="category" data-category="Drinkware">
+                                <div class="category-tile">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M12 3c-2 4-6 7-6 11a6 6 0 0 0 12 0c0-4-4-7-6-11Z" />
+                                    </svg>
+                                </div>Drinkware
+                            </div>
+
+                            <div class="category" data-category="Hats">
+                                <div class="category-tile">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M3 16h18l-2-6H5l-2 6Z" />
+                                        <path d="M7 10V7h10v3M9 7V5h6v2" />
+                                    </svg>
+                                </div>Hats
+                            </div>
+                        </div>
+
+                        <div class="section-row">
+                            <h3 class="section-title">Everyday favorites</h3>
+                            <button class="view-all" data-go="shop">View all</button>
+                        </div>
+
+                        <div class="products">
+                            <button class="product-card" data-product="tote">
+                                <div class="product-image"><svg viewBox="0 0 100 100">
+                                        <use href="#tote" />
+                                    </svg></div>
+                                <div class="product-name">Tote Bag</div>
+                                <div class="rating">☆ 4.8 (124)</div>
+                                <div class="price">Rs. 850</div>
+                            </button>
+
+                            <button class="product-card" data-product="wallet">
+                                <div class="product-image"><svg viewBox="0 0 100 80">
+                                        <use href="#wallet" />
+                                    </svg></div>
+                                <div class="product-name">Wallet</div>
+                                <div class="rating">☆ 4.7 (86)</div>
+                                <div class="price">Rs.550</div>
+                            </button>
+                        </div>
+
+                        <div class="delivery">♧ &nbsp; Thoughtful essentials. Delivered to your door.</div>
+                    </main>
+                </section>
+
+                <!-- 2. SHOP PAGE -->
+                <section class="screen" id="shop" data-label="Shop page">
+                    <header class="screen-header">
+                        <div class="screen-title">Shop essentials</div>
+                        <button class="icon-btn" data-go="checkout" aria-label="Cart">▢</button>
+                    </header>
+
+                    <main class="page-content">
+                        <label class="search">
+                            <svg viewBox="0 0 24 24">
+                                <circle cx="10.8" cy="10.8" r="7.2" />
+                                <path d="m16 16 4 4" />
+                            </svg>
+                            <input class="search-input" data-search="shop" placeholder="Search everyday essentials">
+                        </label>
+
+                        <div class="chips">
+                            <button class="chip active" data-filter="All">All</button>
+                            <button class="chip" data-filter="Bags">Bags</button>
+                            <button class="chip" data-filter="Wallets">Wallets</button>
+                            <button class="chip" data-filter="More">More</button>
+                        </div>
+
+                        <div class="tool-row">
+                            <button class="tool-btn" data-action="filter">☷ &nbsp; Filter</button>
+                            <button class="tool-btn" data-action="sort">↕ &nbsp; Sort: Featured</button>
+                        </div>
+
+                        <div class="catalog-meta">
+                            <span id="productCount">4 products</span>
+                            <span id="categoryMeta">All categories</span>
+                        </div>
+
+                        <div class="products shop-grid" id="shopGrid">
+                            <button class="product-card" data-product="tote" data-name="tote bag" data-category="Bags">
+                                <div class="product-image"><svg viewBox="0 0 100 100">
+                                        <use href="#tote" />
+                                    </svg></div>
+                                <div class="product-name">Tote Bag</div>
+                                <div class="rating">☆ 4.8 (124)</div>
+                                <div class="price">Rs. 850</div>
+                            </button>
+
+                            <button class="product-card" data-product="wallet" data-name="wallet"
+                                data-category="Wallets">
+                                <div class="product-image"><svg viewBox="0 0 100 80">
+                                        <use href="#wallet" />
+                                    </svg></div>
+                                <div class="product-name">Wallet</div>
+                                <div class="rating">☆ 4.7 (86)</div>
+                                <div class="price">Rs.550</div>
+                            </button>
+
+                            <button class="product-card" data-product="bottle" data-name="daily bottle"
+                                data-category="Drinkware">
+                                <div class="product-image"><svg viewBox="0 0 100 100">
+                                        <use href="#bottle" />
+                                    </svg></div>
+                                <div class="product-name">Daily Bottle</div>
+                                <div class="rating">☆ 4.9 (51)</div>
+                                <div class="price">Rs. 620</div>
+                            </button>
+
+                            <button class="product-card" data-product="cap" data-name="classic cap"
+                                data-category="Hats">
+                                <div class="product-image"><svg viewBox="0 0 100 80">
+                                        <use href="#cap" />
+                                    </svg></div>
+                                <div class="product-name">Classic Cap</div>
+                                <div class="rating">☆ 4.6 (58)</div>
+                                <div class="price">Rs. 450</div>
+                            </button>
+                        </div>
+
+                        <div class="catalog-note">You've seen all the essentials.</div>
+                    </main>
+                </section>
+
+                <!-- 3. PRODUCT DETAILS -->
+                <section class="screen" id="details" data-label="Product details">
+                    <header class="screen-header">
+                        <button class="icon-btn" data-action="back" aria-label="Go back">←</button>
+                        <div class="screen-title">Product details</div>
+                        <button class="icon-btn" data-go="checkout" aria-label="Cart">▢</button>
+                    </header>
+
+                    <main class="page-content">
+                        <div class="product-hero">
+                            <div class="stock">In stock</div>
+                            <svg id="detailIllustration" viewBox="0 0 100 100">
+                                <use href="#tote" />
+                            </svg>
+                            <div class="dots"><i></i><i></i><i></i></div>
+                        </div>
+
+                        <div class="detail-title-row">
+                            <div class="detail-title" id="detailName">Tote Bag</div>
+                            <button class="heart" id="heartButton" aria-label="Wishlist">♡</button>
+                        </div>
+
+                        <div class="reviews" id="detailReviews">☆ 4.8 · 124 Reviews</div>
+                        <div class="detail-price" id="detailPrice">Rs.850</div>
+
+                        <div class="option-label">Color: <span id="colorName">Natural</span></div>
+                        <div class="swatches"><span class="swatch"></span> Natural &nbsp;&nbsp; ○ One size</div>
+
+                        <div class="details-copy">
+                            <p id="detailTagline">Minimal tote for your everyday</p>
+                            <p id="detailDescription">Comfortable, durable, with an inside pocket to keep everything
+                                close and within easy reach.</p>
+                            <p>100% cotton canvas · 38 × 34 cm</p>
+                        </div>
+
+                        <ul class="features">
+                            <li>Easy returns within 30 days</li>
+                        </ul>
+
+                        <button class="primary-button" data-action="add-cart" id="addCartButton">Add to Cart ·
+                            Rs.850</button>
+                        <div class="button-note">Shipping and taxes calculated at checkout</div>
+                    </main>
+                </section>
+
+                <!-- 4. CHECKOUT -->
+                <section class="screen" id="checkout" data-label="checkout">
+                    <header class="screen-header">
+                        <button class="icon-btn" data-action="back" aria-label="Go back">←</button>
+                        <div class="screen-title">Shopping cart (<span id="cartHeaderCount">1</span>)</div>
+                        <button class="icon-btn" aria-label="Cart">▢</button>
+                    </header>
+
+                    <main class="page-content">
+                        <div class="success-strip">✓ &nbsp; Your cart is up to date · <span id="cartItemCount">1</span>
+                            items</div>
+
+                        <div class="cart-item">
+                            <div class="cart-thumb">
+                                <svg viewBox="0 0 100 100">
+                                    <use id="cartIllustrationUse" href="#tote" />
+                                </svg>
+                            </div>
+
+                            <div>
+                                <div class="cart-item-title" id="cartProductName">Everyday Tote</div>
+                                <div class="cart-item-sub">Natural · One size</div>
+                                <div class="quantity">
+                                    <button data-action="quantity-minus">−</button>
+                                    <span id="quantityValue">1</span>
+                                    <button data-action="quantity-plus">+</button>
+                                </div>
+                            </div>
+
+                            <div class="item-price" id="cartItemPrice">Rs.850</div>
+                        </div>
+
+                        <div class="promo-code">
+                            <input id="promoInput" placeholder="Promo code" aria-label="Promo code">
+                            <button data-action="apply-promo">Apply</button>
+                        </div>
+                        <div id="promoApplied" class="applied-code">RAP10 applied · 10% off</div>
+
+                        <h3 class="summary-title">Order summary</h3>
+
+                        <div class="summary-line">
+                            <span id="subtotalLabel">Subtotal (1 item)</span>
+                            <strong id="subtotalValue">Rs.850</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Standard shipping</span>
+                            <strong>Rs.100</strong>
+                        </div>
+                        <div class="summary-line">
+                            <span>Tax</span>
+                            <strong id="taxValue">Rs.45</strong>
+                        </div>
+                        <div class="summary-line" id="discountLine" style="display:none">
+                            <span>Discount</span><strong id="discountValue">−Rs.85</strong>
+                        </div>
+
+                        <div class="summary-divider"></div>
+                        <div class="summary-line summary-total">
+                            <span>Total</span>
+                            <strong id="totalValue">Rs.995</strong>
+                        </div>
+
+                        <p class="fine-print">Estimated for your saved address. Final shipping and taxes are confirmed
+                            at checkout.</p>
+
+                        <button class="primary-button" data-go="confirmation">Proceed to Checkout</button>
+                        <div class="button-note">Review your order and payment before placing your order.</div>
+                    </main>
+                </section>
+
+                <!-- 5. ORDER CONFIRMATION -->
+                <section class="screen" id="confirmation" data-label="Order confirmation">
+                    <header class="screen-header">
+                        <div class="screen-title">Order confirmation</div>
+                        <button class="icon-btn" data-go="home" aria-label="Home">⌂</button>
+                    </header>
+
+                    <main class="page-content">
+                        <div class="confirmation">
+                            <div class="check-circle">✓</div>
+                            <h2 class="thanks">Thanks! You’re all set.</h2>
+                            <p class="confirm-copy">
+                                Your order has been placed and paid.<br>
+                                A confirmation has been sent to your email.
+                            </p>
+                        </div>
+
+                        <div class="order-card">
+                            <div class="order-card-top">
+                                <span>Order #23mis0042</span>
+                                <span style="color:#648879">Paid · Confirmed</span>
+                            </div>
+                            <div class="order-card-sub">Placed October 16, 2026</div>
+                        </div>
+
+                        <h3 class="order-heading">Order summary</h3>
+
+                        <div class="order-product">
+                            <div class="mini-thumb">
+                                <svg viewBox="0 0 100 100">
+                                    <use id="confirmationIllustrationUse" href="#tote" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="order-product-name" id="confirmationProductName">Everyday Tote</div>
+                                <div class="order-product-sub" id="confirmationProductVariant">Natural · Qty 1 · Rs.850
+                                </div>
+                            </div>
+                            <div class="item-price" id="confirmationItemPrice">Rs.850</div>
+                        </div>
+
+                        <div class="order-summary-lines">
+                            <div class="summary-line">
+                                <span id="confirmationSubtotalLabel">Subtotal (1 item)</span>
+                                <strong id="confirmationSubtotal">Rs.850</strong>
+                            </div>
+                            <div class="summary-line"><span>Standard shipping</span><strong>Rs.100</strong></div>
+                            <div class="summary-line"><span>Tax</span><strong>Rs.45</strong></div>
+                            <div class="summary-line summary-total">
+                                <span>Total</span><strong id="confirmationTotal">Rs.995</strong>
+                            </div>
+                        </div>
+
+                        <div class="delivery" style="justify-content:flex-start;white-space:normal;margin:12px 0">
+                            Arrives October 21–23 · Standard shipping to SAN, VIT VELLORE
+                        </div>
+
+                        <button class="primary-button" data-action="continue-shopping">Continue Shopping</button>
+                    </main>
+                </section>
+
+                <!-- ACCOUNT SCREEN FOR BOTTOM NAVIGATION -->
+                <section class="screen" id="account" data-label="Account">
+                    <header class="screen-header">
+                        <div class="header-brand">My Account</div>
+                    </header>
+
+                    <main class="page-content">
+                        <div class="account-intro">
+                            <div class="avatar">♙</div>
+                            <h2>Hello, shopper!</h2>
+                            <p>Welcome to your RapCart account</p>
+                        </div>
+                        <div class="account-row">My orders <span>›</span></div>
+                        <div class="account-row">Saved addresses <span>›</span></div>
+                        <div class="account-row">Wishlist <span>›</span></div>
+                        <div class="account-row">Help &amp; support <span>›</span></div>
+                        <button class="primary-button" data-go="shop">Explore the collection</button>
+                    </main>
+                </section>
+
+            </div>
+
+            <!-- SHARED BOTTOM NAVIGATION -->
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-go="home">
+                    <svg viewBox="0 0 24 24">
+                        <path d="m3 10 9-7 9 7v10h-7v-7h-4v7H4V10" />
+                    </svg>
+                    <span>Home</span>
+                </button>
+
+                <button class="nav-item" data-go="shop">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                    </svg>
+                    <span>Shop</span>
+                </button>
+
+                <button class="nav-item" data-go="checkout">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 8h16l-1 13H5L4 8Z" />
+                        <path d="M8 8V6a4 4 0 0 1 8 0v2" />
+                    </svg>
+                    <span>Cart</span>
+                </button>
+
+                <button class="nav-item" data-go="account">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="7" r="4" />
+                        <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+                    </svg>
+                    <span>Account</span>
+                </button>
+            </nav>
+
+            <div class="home-indicator"><span></span></div>
+            <div class="toast" id="toast"></div>
+        </div>
+    </div>
+
+    <!-- SVG PRODUCT ILLUSTRATIONS -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden">
+        <symbol id="tote" viewBox="0 0 100 100">
+            <path d="M37 32V21c0-17 27-17 27 0v11h-7V21c0-8-13-8-13 0v11z" fill="#c4c9c5" stroke="#8e9691"
+                stroke-width="1.5" />
+            <path d="M21 33h59l8 56H13z" fill="#b9bfbb" stroke="#8b938e" stroke-width="1.5" />
+        </symbol>
+
+        <symbol id="wallet" viewBox="0 0 100 80">
+            <rect x="15" y="17" width="69" height="49" rx="4" fill="#bdc3bf" stroke="#8c9690" stroke-width="1.5" />
+            <path d="M63 37h26v18H63z" fill="#dce3de" stroke="#8c9690" stroke-width="1.5" />
+        </symbol>
+
+        <symbol id="bottle" viewBox="0 0 100 100">
+            <path d="M41 13h18v12H41z" fill="#bcc3bf" stroke="#8c9690" stroke-width="1.5" />
+            <path d="M38 25h24v8l7 8v40a6 6 0 0 1-6 6H37a6 6 0 0 1-6-6V41l7-8z" fill="#b9bfbb" stroke="#8c9690"
+                stroke-width="1.5" />
+        </symbol>
+
+        <symbol id="cap" viewBox="0 0 100 80">
+            <path d="M18 43c2-18 15-28 32-28s30 11 32 28z" fill="#bdc3bf" stroke="#8c9690" stroke-width="1.5" />
+            <path d="M18 43c12-3 37-4 57 1 7 2 12 6 9 10-7 9-38 8-66 0-7-2-8-7 0-11z" fill="#c5cbc7" stroke="#8c9690"
+                stroke-width="1.5" />
+        </symbol>
+    </svg>
+
+    <script>
+        (() => {
+            const screens = ['home', 'shop', 'details', 'checkout', 'confirmation', 'account'];
+            const history = [];
+
+            let current = 'home';
+            let selectedProduct = 'tote';
+            let quantity = 1;
+            let promoApplied = false;
+            let currentFilter = 'All';
+            let sorted = false;
+
+            const products = {
+                tote: {
+                    name: 'Tote Bag',
+                    cartName: 'Everyday Tote',
+                    price: 850,
+                    review: '☆ 4.8 · 124 Reviews',
+                    category: 'Bags',
+                    symbol: 'tote',
+                    tagline: 'Minimal tote for your everyday',
+                    description: 'Comfortable, durable, with an inside pocket to keep everything close and within easy reach.'
+                },
+                wallet: {
+                    name: 'Wallet',
+                    cartName: 'Wallet',
+                    price: 550,
+                    review: '☆ 4.7 · 86 Reviews',
+                    category: 'Wallets',
+                    symbol: 'wallet',
+                    tagline: 'A compact wallet for everyday essentials',
+                    description: 'A clean, practical design with room for your cards and daily essentials.'
+                },
+                bottle: {
+                    name: 'Daily Bottle',
+                    cartName: 'Daily Bottle',
+                    price: 620,
+                    review: '☆ 4.9 · 51 Reviews',
+                    category: 'Drinkware',
+                    symbol: 'bottle',
+                    tagline: 'Hydration wherever the day takes you',
+                    description: 'A lightweight reusable bottle designed to travel easily with you.'
+                },
+                cap: {
+                    name: 'Classic Cap',
+                    cartName: 'Classic Cap',
+                    price: 450,
+                    review: '☆ 4.6 · 58 Reviews',
+                    category: 'Hats',
+                    symbol: 'cap',
+                    tagline: 'A timeless everyday cap',
+                    description: 'A simple, comfortable cap with a versatile shape and an easy fit.'
+                }
+            };
+
+            const $ = (selector, root = document) => root.querySelector(selector);
+            const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+            const money = value => 'Rs.' + Math.round(value).toLocaleString('en-IN');
+
+            function go(id, fromBack = false) {
+                if (!screens.includes(id)) return;
+
+                if (!fromBack && id !== current) {
+                    history.push(current);
+                }
+
+                current = id;
+
+                $$('.screen').forEach(screen => {
+                    screen.classList.toggle('active', screen.id === id);
+                });
+
+                $('#screenLabel').textContent = $('#' + id).dataset.label;
+
+                $$('.nav-item').forEach(button => {
+                    button.classList.toggle(
+                        'active',
+                        button.dataset.go === id ||
+                        (id === 'details' && button.dataset.go === 'shop')
+                    );
+                });
+
+                if (id === 'checkout') updateCart();
+                if (id === 'confirmation') updateConfirmation();
+
+                $('#' + id + ' .page-content')?.scrollTo(0, 0);
+            }
+
+            function showToast(message) {
+                const toast = $('#toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+
+                clearTimeout(showToast.timer);
+                showToast.timer = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1800);
+            }
+
+            function openProduct(key) {
+                const product = products[key];
+                if (!product) return;
+
+                selectedProduct = key;
+
+                $('#detailName').textContent = product.name;
+                $('#detailReviews').textContent = product.review;
+                $('#detailPrice').textContent = money(product.price);
+                $('#addCartButton').textContent = 'Add to Cart · ' + money(product.price);
+                $('#detailIllustration').innerHTML =
+                    `<use href="#${product.symbol}"></use>`;
+                $('#detailTagline').textContent = product.tagline;
+                $('#detailDescription').textContent = product.description;
+
+                go('details');
+            }
+
+            function updateCart() {
+                const product = products[selectedProduct];
+                const subtotal = product.price * quantity;
+                const tax = Math.round(subtotal * 45 / 850);
+                const discount = promoApplied ? Math.round(subtotal * 0.10) : 0;
+                const total = subtotal + 100 + tax - discount;
+
+                $('#cartHeaderCount').textContent = quantity;
+                $('#cartItemCount').textContent = quantity;
+                $('#quantityValue').textContent = quantity;
+                $('#cartProductName').textContent = product.cartName;
+                $('#cartIllustrationUse').setAttribute('href', '#' + product.symbol);
+                $('#cartItemPrice').textContent = money(subtotal);
+
+                $('#subtotalLabel').textContent =
+                    `Subtotal (${quantity} ${quantity === 1 ? 'item' : 'items'})`;
+                $('#subtotalValue').textContent = money(subtotal);
+                $('#taxValue').textContent = money(tax);
+                $('#totalValue').textContent = money(total);
+
+                $('#promoApplied').style.display = promoApplied ? 'block' : 'none';
+                $('#discountLine').style.display = promoApplied ? 'flex' : 'none';
+                $('#discountValue').textContent = '−' + money(discount);
+            }
+
+            function updateConfirmation() {
+                const product = products[selectedProduct];
+                const subtotal = product.price * quantity;
+                const tax = Math.round(subtotal * 45 / 850);
+                const discount = promoApplied ? Math.round(subtotal * 0.10) : 0;
+                const total = subtotal + 100 + tax - discount;
+
+                $('#confirmationIllustrationUse').setAttribute('href', '#' + product.symbol);
+                $('#confirmationProductName').textContent = product.cartName;
+                $('#confirmationProductVariant').textContent =
+                    `Natural · Qty ${quantity} · ${money(product.price)}`;
+                $('#confirmationItemPrice').textContent = money(subtotal);
+                $('#confirmationSubtotalLabel').textContent =
+                    `Subtotal (${quantity} ${quantity === 1 ? 'item' : 'items'})`;
+                $('#confirmationSubtotal').textContent = money(subtotal);
+                $('#confirmationTotal').textContent = money(total);
+            }
+
+            function applyFilter(filter) {
+                currentFilter = filter;
+
+                $$('.chip').forEach(chip => {
+                    chip.classList.toggle('active', chip.dataset.filter === filter);
+                });
+
+                let count = 0;
+
+                $$('#shopGrid .product-card').forEach(card => {
+                    const category = card.dataset.category;
+                    const categoryMatch =
+                        filter === 'All' ||
+                        category === filter ||
+                        (filter === 'More' && ['Drinkware', 'Hats'].includes(category));
+
+                    const searchText = $('.search-input[data-search="shop"]').value.toLowerCase();
+                    const searchMatch = card.dataset.name.includes(searchText);
+                    const visible = categoryMatch && searchMatch;
+
+                    card.style.display = visible ? '' : 'none';
+                    if (visible) count++;
+                });
+
+                $('#productCount').textContent =
+                    count + (count === 1 ? ' product' : ' products');
+
+                $('#categoryMeta').textContent =
+                    filter === 'All' ? 'All categories' :
+                        filter === 'More' ? 'More categories' : filter;
+            }
+
+            document.addEventListener('click', event => {
+                const goButton = event.target.closest('[data-go]');
+
+                if (goButton) {
+                    go(goButton.dataset.go);
+                    return;
+                }
+
+                const productCard = event.target.closest('[data-product]');
+
+                if (productCard) {
+                    openProduct(productCard.dataset.product);
+                    return;
+                }
+
+                const category = event.target.closest('[data-category]');
+
+                if (category) {
+                    go('shop');
+                    applyFilter(category.dataset.category);
+                    return;
+                }
+
+                const filterButton = event.target.closest('[data-filter]');
+
+                if (filterButton) {
+                    applyFilter(filterButton.dataset.filter);
+                    return;
+                }
+
+                const action = event.target.closest('[data-action]')?.dataset.action;
+                if (!action) return;
+
+                if (action === 'back') {
+                    go(history.pop() || 'home', true);
+                }
+
+                if (action === 'add-cart') {
+                    quantity = 1;
+                    promoApplied = false;
+                    $('#promoInput').value = '';
+                    go('checkout');
+                    showToast('Added to your cart');
+                }
+
+                if (action === 'quantity-minus') {
+                    quantity = Math.max(1, quantity - 1);
+                    updateCart();
+                }
+
+                if (action === 'quantity-plus') {
+                    quantity = Math.min(99, quantity + 1);
+                    updateCart();
+                }
+
+                if (action === 'apply-promo') {
+                    const code = $('#promoInput').value.trim().toUpperCase();
+
+                    if (code === 'RAP10' || code === 'SAVE10') {
+                        promoApplied = true;
+                        updateCart();
+                        showToast('Promo code applied');
+                    } else {
+                        promoApplied = false;
+                        updateCart();
+                        showToast(code ? 'Invalid promo code' : 'Enter a promo code');
+                    }
+                }
+
+                if (action === 'continue-shopping') {
+                    quantity = 1;
+                    promoApplied = false;
+                    go('shop');
+                }
+
+                if (action === 'filter') {
+                    applyFilter(currentFilter === 'All' ? 'Bags' : 'All');
+                }
+
+                if (action === 'sort') {
+                    sorted = !sorted;
+
+                    const grid = $('#shopGrid');
+                    [...grid.children].reverse().forEach(card => grid.appendChild(card));
+
+                    event.target.closest('button').textContent =
+                        sorted ? '↕ Sort: Price' : '↕ Sort: Featured';
+                }
+
+                if (action === 'notify') {
+                    showToast('You’re all caught up');
+                }
+            });
+
+            document.addEventListener('input', event => {
+                if (!event.target.matches('.search-input')) return;
+
+                const input = event.target;
+                const query = input.value.trim().toLowerCase();
+
+                if (input.dataset.search === 'shop') {
+                    applyFilter(currentFilter);
+                    return;
+                }
+
+                if (input.dataset.search === 'home') {
+                    $$('#home .product-card').forEach(card => {
+                        card.style.display =
+                            card.textContent.toLowerCase().includes(query) ? '' : 'none';
+                    });
+                }
+            });
+
+            $('#heartButton').addEventListener('click', () => {
+                const button = $('#heartButton');
+                const liked = button.textContent === '♥';
+                button.textContent = liked ? '♡' : '♥';
+                showToast(liked ? 'Removed from wishlist' : 'Added to wishlist');
+            });
+        })();
+    </script>
+</body>
+
+</html>
